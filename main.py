@@ -70,10 +70,10 @@ class Ball:
         # Изменение направления по горизонтали
         if self.rect.x + self.rect.width >= ww:
             self.is_right = False
-            self.speed += 0.01
+            self.speed += 0.1
         elif self.rect.x <= 0:
             self.is_right = True
-            self.speed += 0.01
+            self.speed += 0.1
 
     # Функция для отрисовки
     def draw(self):
