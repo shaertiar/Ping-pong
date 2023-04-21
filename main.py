@@ -156,7 +156,7 @@ while is_app:
                 is_continue = False
 
             # Проверка вылета мяча за поле
-            if ball.rect.y <= 19:
+            if ball.rect.y <= 10:
                 player2.points += 1
 
                 is_game = False
@@ -164,7 +164,7 @@ while is_app:
                 # Окрашивание экрана
                 window.fill((0, 0, 0))
 
-            elif ball.rect.y >= wh - 19:
+            elif ball.rect.y + ball.rect.height >= wh - 10:
                 player1.points += 1
 
                 is_game = False
