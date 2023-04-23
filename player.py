@@ -17,6 +17,10 @@ class Player:
 
     # Функция для обновления
     def update(self):
+        # Увеличение скорости
+        self.speed += 0.1/24
+
+        # Обработка нажатий
         keys = pg.key.get_pressed()
 
         if keys[self.button_left]:

@@ -30,10 +30,10 @@ class Ball:
         # Изменение направления по горизонтали
         if self.rect.x + self.rect.width >= settings.ww:
             self.is_right = False
-            self.speed += 0.1
+            self.speed += 1
         elif self.rect.x <= 0:
             self.is_right = True
-            self.speed += 0.1
+            self.speed += 1
 
     # Функция для отрисовки
     def draw(self):
@@ -41,6 +41,7 @@ class Ball:
 
     # Функция для возвращения мяча на исходное место
     def restart(self):
+        self.speed /= 2
         self.rect.x, self.rect.y = 240, 240
         self.is_down = random.choice([True, False])
         self.is_right = random.choice([True, False])

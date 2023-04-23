@@ -22,7 +22,7 @@ window = pg.display.set_mode((settings.ww, settings.wh))
 pg.display.set_caption('Пинг-Понг')
 
 # Создание мяча
-ball = ball.Ball(window, 20, 240, 240, 1)
+my_ball = ball.Ball(window, 20, (settings.ww-20)/2, (settings.wh-20)/2, 6)
 
 # Цикл приложения
 is_app = True
@@ -54,16 +54,16 @@ while is_app:
     # Кнопка игры с ботом
     button1 = my_font_small.render('С ботом', False, (255, 255, 255), (123, 123, 123))
     button1_rect = button1.get_rect()
-    button1_rect.x = settings.ww / 4 * 3 - button1_rect.width / 2
+    button1_rect.x = settings.ww / 4 - button1_rect.width / 2
     button1_rect.y = settings.wh / 2 - button1_rect.height / 2
-    window.blit(button1, ((settings.ww - button1.get_width())/4, (settings.wh - button1.get_height())/2))
+    window.blit(button1, (button1_rect.x, button1_rect.y))
     
     # Кнопка игры с другом
     button2 = my_font_small.render('С другом', False, (255, 255, 255), (123, 123, 123))
     button2_rect = button2.get_rect()
-    button2_rect.x = settings.ww / 4 - button2_rect.width / 2
+    button2_rect.x = settings.ww / 4 * 3 - button2_rect.width / 2
     button2_rect.y = settings.wh / 2 - button2_rect.height / 2
-    window.blit(button2, ((settings.ww - button2.get_width())/4*3, (settings.wh - button2.get_height())/2))
+    window.blit(button2, (button2_rect.x, button2_rect.y))
 
 
     # Проверка нажатий на кнопки
@@ -71,8 +71,8 @@ while is_app:
         play_mode = 1
         
         # Создание игроков
-        player1 = player.Player(window, (255, 0, 0), 10, (pg.K_LEFT, pg.K_RIGHT), 2)
-        player2 = player.Player(window, (0, 0, 255), 480, (pg.K_a, pg.K_d), 2)
+        player1 = player.Player(window, (255, 0, 0), 10, (pg.K_LEFT, pg.K_RIGHT), 5)
+        player2 = bot.Bot(window, (0, 0, 255), 480, my_ball, 6)
 
         mouse_pos = (0, 0)
 
@@ -80,8 +80,8 @@ while is_app:
         play_mode = 2
         
         # Создание игроков
-        player1 = player.Player(window, (255, 0, 0), 10, (pg.K_LEFT, pg.K_RIGHT), 2)
-        player2 = bot.Bot(window, (0, 0, 255), 480, ball, 3)
+        player1 = player.Player(window, (255, 0, 0), 10, (pg.K_LEFT, pg.K_RIGHT), 5)
+        player2 = player.Player(window, (0, 0, 255), 480, (pg.K_a, pg.K_d), 5)
 
         mouse_pos = (0, 0)
 
@@ -97,7 +97,7 @@ while is_app:
             player2.restart()
 
             # Рестарт мяча
-            ball.restart()
+            my_ball.restart()
 
             # Цикл раунда
             is_round = True
@@ -115,6 +115,7 @@ while is_app:
                             is_game = False
                             is_round = False
                             play_mode = 0
+                            my_ball = ball.Ball(window, 20, (settings.ww-20)/2, (settings.wh-20)/2, 6)
 
                 # Закрашвание окна
                 window.fill((0, 0, 0))
@@ -131,33 +132,33 @@ while is_app:
 
                 if is_continue:
                     # Обновление и отричовка игроков
-                    ball.update()
-                    ball.draw()
+                    my_ball.update()
+                    my_ball.draw()
 
                     # Проверка столкновений мяча с игроками
-                    if pg.sprite.collide_rect(ball, player1):
-                        ball.is_down = True
-                        ball.color = (200, 0, 0)
+                    if pg.sprite.collide_rect(my_ball, player1):
+                        my_ball.is_down = True
+                        my_ball.color = (200, 0, 0)
 
-                    elif pg.sprite.collide_rect(ball, player2):
-                        ball.is_down = False
-                        ball.color = (0, 0, 200)
+                    elif pg.sprite.collide_rect(my_ball, player2):
+                        my_ball.is_down = False
+                        my_ball.color = (0, 0, 200)
 
                     # Проверка количества очков у игроков
-                    if player1.points >= 5:
+                    if player1.points >= 7:
                         player1.points = 'WIN'
                         player2.points = 'Lose'
 
                         is_continue = False
 
-                    elif player2.points >= 5:
+                    elif player2.points >= 7:
                         player1.points = 'WIN'
                         player2.points = 'Lose'
 
                         is_continue = False
 
                     # Проверка вылета мяча за поле
-                    if ball.rect.y <= 10:
+                    if my_ball.rect.y <= 10:
                         player2.points += 1
 
                         is_round = False
@@ -165,7 +166,7 @@ while is_app:
                         # Окрашивание экрана
                         window.fill((0, 0, 0))
 
-                    elif ball.rect.y + ball.rect.height >= settings.wh - 10:
+                    elif my_ball.rect.y + my_ball.rect.height >= settings.wh - 10:
                         player1.points += 1
 
                         is_round = False

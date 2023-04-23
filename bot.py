@@ -16,6 +16,10 @@ class Bot:
 
     # Функция обновления
     def update(self):
+        # Увеличение скорости
+        self.speed += 0.1/24
+
+        # Движение за мячом
         if self.ball.rect.x + self.ball.rect.width / 2 > self.rect.x + self.rect.width / 2:
             if self.rect.x + self.rect.width <= settings.ww:
                 self.rect.x += self.speed
