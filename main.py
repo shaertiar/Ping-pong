@@ -1,184 +1,186 @@
 import pygame as pg
-import random 
+
+import settings
+import player
+import bot
+import ball
+
 import time
 
 # Иниацилизация 
 pg.init()
 
-# Настройки окна
-ww, wh = 500, 500
-fps = 60
-
-# Класс игрока
-class Player:
-    # Конструктор
-    def __init__(self, color:tuple, y:int, buttons:tuple, speed:int):
-        self.color = color
-        self.width = 100
-        self.spawn_x = (ww - self.width)/2
-        self.rect = pg.rect.Rect(self.spawn_x, y, self.width, 10)
-        self.button_left = buttons[0]
-        self.button_right = buttons[1]
-        self.speed = speed
-        self.points = 0
-
-    # Функция для обновления
-    def update(self):
-        keys = pg.key.get_pressed()
-
-        if keys[self.button_left]:
-            if self.rect.x >= 0:
-                self.rect.x -= self.speed
-
-        elif keys[self.button_right]:
-            if self.rect.x + self.rect.width < ww:
-                self.rect.x += self.speed
-
-    # Функция для отрисовки
-    def draw(self):
-        pg.draw.rect(window, self.color, self.rect)
-
-    # Функция для перемещения игрока на изначальное место
-    def restart(self):
-        self.spawn_x = (ww - self.width)/2
-        self.rect.x = self.spawn_x
-
-# Класс мяча
-class Ball:
-    # Конструктор
-    def __init__(self, side:int, x:int, y:int, speed:int):
-        self.color = (255, 255, 255)
-        self.rect = pg.rect.Rect(x, y, side, side)
-        self.speed = speed
-        self.is_down = random.choice([True, False])
-        self.is_right = random.choice([True, False])
-
-    # Метод для обновления
-    def update(self):
-        # Движение по вертикали
-        if self.is_down:
-            self.rect.y += self.speed
-        else:
-            self.rect.y -= self.speed
-
-        # Движение по горизонтали
-        if self.is_right:
-            self.rect.x += self.speed
-        else:
-            self.rect.x -= self.speed
-
-        # Изменение направления по горизонтали
-        if self.rect.x + self.rect.width >= ww:
-            self.is_right = False
-            self.speed += 0.1
-        elif self.rect.x <= 0:
-            self.is_right = True
-            self.speed += 0.1
-
-    # Функция для отрисовки
-    def draw(self):
-        pg.draw.rect(window, self.color, self.rect)
-
 # Создание часов
 clock = pg.time.Clock()
 
 # Создание шрифта
-my_font = pg.font.SysFont('serif', 50)
+my_font = pg.font.SysFont('arial', 45)
+my_font_small = pg.font.SysFont('arial', 30)
 
 # Создание окна
-window = pg.display.set_mode((ww, wh))
+window = pg.display.set_mode((settings.ww, settings.wh))
 pg.display.set_caption('Пинг-Понг')
 
-# Создание игроков
-player1 = Player((255, 0, 0), 10, (pg.K_LEFT, pg.K_RIGHT), 2)
-player2 = Player((0, 0, 255), 480, (pg.K_a, pg.K_d), 2)
+# Создание мяча
+ball = ball.Ball(window, 20, 240, 240, 1)
 
 # Цикл приложения
 is_app = True
 while is_app:
-    is_continue = True
+    # Создание переменной с режимом игры
+    play_mode = 0
 
-    # Рестарт игроков
-    player1.restart()
-    player2.restart()
+    # Создание переменной с позицией мышки
+    mouse_pos = (10000, 10000)
 
-    # Создание мяча
-    ball = Ball(20, 240, 240, 1)
+    # Обработка событий
+    for event in pg.event.get():
+        # Выход из игры
+        if event.type == pg.QUIT:
+            is_app = False
 
-    # Игровой цикл
-    is_game = True
-    while is_game:
-        # Обработка событий
-        for event in pg.event.get():
-            # Выход
-            if event.type == pg.QUIT:
-                is_game = False
-                is_app = False
+        # Обработка нажатий мышки
+        if event.type == pg.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                mouse_pos = event.pos
 
-        # Закрашвание окна
-        window.fill((0, 0, 0))
-
-        # Отрисовка очков
-        score = my_font.render(f'{player1.points} : {player2.points}', False, (123, 123, 123))
-        window.blit(score, ((ww - score.get_width())/2, (wh - score.get_height())/2))
-
-        # Обновление и ототрисовка игроков
-        player1.update()
-        player2.update()
-        player1.draw()
-        player2.draw()
-
-        if is_continue:
-            # Обновление и отричовка игроков
-            ball.update()
-            ball.draw()
-
-            # Проверка столкновений мяча с игроками
-            if pg.sprite.collide_rect(ball, player1):
-                ball.is_down = True
-                ball.color = (200, 0, 0)
-
-            elif pg.sprite.collide_rect(ball, player2):
-                ball.is_down = False
-                ball.color = (0, 0, 200)
-
-            # Проверка количества очков у игроков
-            if player1.points >= 5:
-                player1.points = 'WIN'
-                player2.points = 'Lose'
-
-                is_continue = False
-
-            elif player2.points >= 5:
-                player1.points = 'WIN'
-                player2.points = 'Lose'
-
-                is_continue = False
-
-            # Проверка вылета мяча за поле
-            if ball.rect.y <= 10:
-                player2.points += 1
-
-                is_game = False
-                
-                # Окрашивание экрана
-                window.fill((0, 0, 0))
-
-            elif ball.rect.y + ball.rect.height >= wh - 10:
-                player1.points += 1
-
-                is_game = False
-
-                # Окрашивание экрана
-                window.fill((0, 0, 0))
-
-        # Обновление окна
-        pg.display.update()
-        clock.tick(fps)
-        
     # Окрашивание экрана
     window.fill((0, 0, 0))
 
-    # 1 сек
-    if is_app:
-        time.sleep(1)
+    # Отрисовка текста
+    text = my_font.render('Выберите режим игры', False, (255, 255, 255))
+    window.blit(text, ((settings.ww - text.get_width())/2, 0))
+
+    # Кнопка игры с ботом
+    button1 = my_font_small.render('С ботом', False, (255, 255, 255), (123, 123, 123))
+    button1_rect = button1.get_rect()
+    button1_rect.x = settings.ww / 4 * 3 - button1_rect.width / 2
+    button1_rect.y = settings.wh / 2 - button1_rect.height / 2
+    window.blit(button1, ((settings.ww - button1.get_width())/4, (settings.wh - button1.get_height())/2))
+    
+    # Кнопка игры с другом
+    button2 = my_font_small.render('С другом', False, (255, 255, 255), (123, 123, 123))
+    button2_rect = button2.get_rect()
+    button2_rect.x = settings.ww / 4 - button2_rect.width / 2
+    button2_rect.y = settings.wh / 2 - button2_rect.height / 2
+    window.blit(button2, ((settings.ww - button2.get_width())/4*3, (settings.wh - button2.get_height())/2))
+
+
+    # Проверка нажатий на кнопки
+    if button1_rect.collidepoint(mouse_pos):
+        play_mode = 1
+        
+        # Создание игроков
+        player1 = player.Player(window, (255, 0, 0), 10, (pg.K_LEFT, pg.K_RIGHT), 2)
+        player2 = player.Player(window, (0, 0, 255), 480, (pg.K_a, pg.K_d), 2)
+
+        mouse_pos = (0, 0)
+
+    elif button2_rect.collidepoint(mouse_pos):
+        play_mode = 2
+        
+        # Создание игроков
+        player1 = player.Player(window, (255, 0, 0), 10, (pg.K_LEFT, pg.K_RIGHT), 2)
+        player2 = bot.Bot(window, (0, 0, 255), 480, ball, 3)
+
+        mouse_pos = (0, 0)
+
+    # Начатие игры
+    if play_mode != 0:
+        # Цикл игры
+        is_game = True
+        while is_game:
+            is_continue = True
+
+            # Рестарт игроков
+            player1.restart()
+            player2.restart()
+
+            # Рестарт мяча
+            ball.restart()
+
+            # Цикл раунда
+            is_round = True
+            while is_round: 
+                # Обработка событий
+                for event in pg.event.get():
+                    # Выход
+                    if event.type == pg.QUIT:
+                        is_app = False
+                        is_game = False
+                        is_round = False
+
+                    elif event.type == pg.KEYDOWN:
+                        if event.key == pg.K_ESCAPE:
+                            is_game = False
+                            is_round = False
+                            play_mode = 0
+
+                # Закрашвание окна
+                window.fill((0, 0, 0))
+
+                # Отрисовка очков
+                score = my_font.render(f'{player1.points} : {player2.points}', False, (123, 123, 123))
+                window.blit(score, ((settings.ww - score.get_width())/2, (settings.wh - score.get_height())/2))
+
+                # Обновление и ототрисовка игроков
+                player1.update()
+                player2.update()
+                player1.draw()
+                player2.draw()
+
+                if is_continue:
+                    # Обновление и отричовка игроков
+                    ball.update()
+                    ball.draw()
+
+                    # Проверка столкновений мяча с игроками
+                    if pg.sprite.collide_rect(ball, player1):
+                        ball.is_down = True
+                        ball.color = (200, 0, 0)
+
+                    elif pg.sprite.collide_rect(ball, player2):
+                        ball.is_down = False
+                        ball.color = (0, 0, 200)
+
+                    # Проверка количества очков у игроков
+                    if player1.points >= 5:
+                        player1.points = 'WIN'
+                        player2.points = 'Lose'
+
+                        is_continue = False
+
+                    elif player2.points >= 5:
+                        player1.points = 'WIN'
+                        player2.points = 'Lose'
+
+                        is_continue = False
+
+                    # Проверка вылета мяча за поле
+                    if ball.rect.y <= 10:
+                        player2.points += 1
+
+                        is_round = False
+
+                        # Окрашивание экрана
+                        window.fill((0, 0, 0))
+
+                    elif ball.rect.y + ball.rect.height >= settings.wh - 10:
+                        player1.points += 1
+
+                        is_round = False
+
+                        # Окрашивание экрана
+                        window.fill((0, 0, 0))
+
+                # Обновление окна
+                pg.display.update()
+                clock.tick(settings.fps)
+
+            # 1 сек
+            if is_round:
+                time.sleep(1)
+
+    # Обновление окна
+    pg.display.update()
+    clock.tick(settings.fps)
